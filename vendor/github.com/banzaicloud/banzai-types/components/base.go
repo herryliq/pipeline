@@ -3,6 +3,7 @@ package components
 import (
 	"bytes"
 	"fmt"
+
 	"github.com/banzaicloud/banzai-types/components/amazon"
 	"github.com/banzaicloud/banzai-types/components/azure"
 	"github.com/banzaicloud/banzai-types/components/dummy"
@@ -69,6 +70,11 @@ type UpdateClusterResponse struct {
 type UpdateClusterRequest struct {
 	Cloud            string `json:"cloud" binding:"required"`
 	UpdateProperties `json:"properties"`
+}
+
+type InstallSecretsToClusterRequest struct {
+	Namespace string `json:"namespace" binding:"required"`
+	Repo      string `json:"repo" binding:"required"`
 }
 
 type DeleteClusterResponse struct {

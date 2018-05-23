@@ -5,6 +5,7 @@ import (
 
 	"encoding/base64"
 	"fmt"
+
 	"github.com/banzaicloud/banzai-types/components"
 	"github.com/banzaicloud/pipeline/auth"
 	"github.com/banzaicloud/pipeline/cluster"

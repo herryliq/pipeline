@@ -638,3 +638,58 @@ func FetchCluster(c *gin.Context) {
 //
 //}
 //
+
+// InstallSecretsToCluster add all secrets from a repo to a cluster's namespace
+func InstallSecretsToCluster(c *gin.Context) {
+	log := logger.WithFields(logrus.Fields{"tag": constants.TagFetchClusterConfig})
+	commonCluster, ok := GetCommonClusterFromRequest(c)
+	if ok != true {
+		return
+	}
+
+	// bind request body to UpdateClusterRequest struct
+	var updateRequest *components.InstallSecretsToClusterRequest
+	if err := c.BindJSON(&updateRequest); err != nil {
+		log.Errorf("Error parsing request: %s", err.Error())
+		c.JSON(http.StatusBadRequest, components.ErrorResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Error parsing request",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	config, err := commonCluster.GetK8sConfig()
+	if err != nil {
+		log.Errorf("Error during getting config: %s", err.Error())
+		c.JSON(http.StatusBadRequest, components.ErrorResponse{
+			Code:    http.StatusBadRequest,
+			Message: "Error during getting config",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	// Force persist keys
+	persistParam := c.DefaultQuery("persist", "false")
+	persist, err := strconv.ParseBool(persistParam)
+	if err != nil {
+		persist = false
+	}
+	if persist {
+		cluster.PersistKubernetesKeys(commonCluster)
+	}
+
+	contentType := c.NegotiateFormat(gin.MIMEPlain, gin.MIMEJSON)
+	log.Debug("Content-Type: ", contentType)
+	switch contentType {
+	case gin.MIMEJSON:
+		c.JSON(http.StatusOK, components.GetClusterConfigResponse{
+			Status: http.StatusOK,
+			Data:   string(config),
+		})
+	default:
+		c.String(http.StatusOK, string(config))
+	}
+	return
+}
