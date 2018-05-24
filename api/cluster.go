@@ -724,10 +724,10 @@ func InstallSecretsToCluster(c *gin.Context) {
 	}
 	_, err = clusterClient.CoreV1().Secrets(request.Namespace).Create(&k8sSecret)
 	if err != nil {
-		log.Errorf("Error during creating secrets: %s", err.Error())
+		log.Errorf("Error during creating k8s secret: %s", err.Error())
 		c.AbortWithStatusJSON(http.StatusInternalServerError, components.ErrorResponse{
 			Code:    http.StatusInternalServerError,
-			Message: "Error during creating secrets",
+			Message: "Error during creating k8s secret",
 			Error:   err.Error(),
 		})
 		return
