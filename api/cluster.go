@@ -702,7 +702,7 @@ func InstallSecretsToCluster(c *gin.Context) {
 		return
 	}
 
-	items, err := secret.Store.List(organizationID, secret.RepoSecretType, request.Repo)
+	items, err := secret.Store.List(organizationID, secret.RepoSecretType, request.Repo, true)
 	if err != nil {
 		log.Errorf("Error during listing secrets: %s", err.Error())
 		c.AbortWithStatusJSON(http.StatusInternalServerError, components.ErrorResponse{
@@ -718,6 +718,7 @@ func InstallSecretsToCluster(c *gin.Context) {
 			Name:      request.Repo,
 			Namespace: request.Namespace,
 		},
+		StringData: map[string]string{},
 	}
 	for _, item := range items {
 		k8sSecret.StringData[item.Name] = item.Values[secret.RepoSecret]

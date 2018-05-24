@@ -10,6 +10,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/cast"
 )
 
 var logger *logrus.Logger
@@ -230,7 +231,7 @@ func (ss *secretStore) Get(organizationID string, secretID string) (*SecretsItem
 }
 
 // List secret secret/orgs/:orgid:/ scope
-func (ss *secretStore) List(organizationID, secretType string, reponame string) ([]SecretsItemResponse, error) {
+func (ss *secretStore) List(organizationID, secretType string, reponame string, addValues bool) ([]SecretsItemResponse, error) {
 	log := logger.WithFields(logrus.Fields{"tag": "ListSecret"})
 	log.Info("Listing secrets")
 	responseItems := make([]SecretsItemResponse, 0)
@@ -256,6 +257,9 @@ func (ss *secretStore) List(organizationID, secretType string, reponame string) 
 						ID:         key.(string),
 						Name:       secretData["name"].(string),
 						SecretType: sType,
+					}
+					if addValues {
+						sir.Values = cast.ToStringMapString(secretData["values"])
 					}
 					responseItems = append(responseItems, sir)
 				}

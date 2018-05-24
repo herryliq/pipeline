@@ -102,7 +102,7 @@ func ListSecrets(c *gin.Context) {
 			Error:   err.Error(),
 		})
 	} else {
-		if items, err := secret.Store.List(organizationID, secretType, repoName); err != nil {
+		if items, err := secret.Store.List(organizationID, secretType, repoName, false); err != nil {
 			log.Errorf("Error during listing secrets: %s", err.Error())
 			c.AbortWithStatusJSON(http.StatusBadRequest, components.ErrorResponse{
 				Code:    http.StatusBadRequest,
