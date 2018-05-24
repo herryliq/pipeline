@@ -890,7 +890,8 @@ func DownloadK8sConfig(kubicornCluster *kcluster.Cluster) ([]byte, error) {
 const (
 	BootstrapScriptMasterKey     = "BOOTSTRAP_SCRIPT_MASTER"
 	BootstrapScriptNodeKey       = "BOOTSTRAP_SCRIPT_NODE"
-	BootstrapScriptMasterDefault = "https://raw.githubusercontent.com/banzaicloud/banzai-charts/master/stable/pipeline/bootstrap/amazon_k8s_ubuntu_16.04_master_pipeline.sh"
+	BootstrapScriptMasterDefault = "https://raw.githubusercontent.com/banzaicloud/banzai-charts/update-master-bootstrap-script/stable/pipeline/bootstrap/amazon_k8s_ubuntu_16.04_master_pipeline.sh"
+	//BootstrapScriptMasterDefault = "https://raw.githubusercontent.com/banzaicloud/banzai-charts/master/stable/pipeline/bootstrap/amazon_k8s_ubuntu_16.04_master_pipeline.sh"
 	BootstrapScriptNodeDefault   = "https://raw.githubusercontent.com/banzaicloud/banzai-charts/master/stable/pipeline/bootstrap/amazon_k8s_ubuntu_16.04_node_pipeline.sh"
 )
 

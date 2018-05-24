@@ -56,7 +56,7 @@
 
 [[constraint]]
   name = "github.com/kubicorn/kubicorn"
-  branch = "master"
+  branch = "user-data"
   source = "github.com/banzaicloud/kubicorn"
 
 [[constraint]]
@@ -201,7 +201,7 @@
   non-go = true
 
 [[override]]
-  branch = "master"
+  branch = "user-data"
   name = "github.com/banzaicloud/kubicorn"
 
 [[constraint]]

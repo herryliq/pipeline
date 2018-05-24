@@ -635,7 +635,7 @@
   revision = "14d43f83481a37e992f5899de8581727b9ba7702"
 
 [[projects]]
-  branch = "master"
+  branch = "user-data"
   name = "github.com/kubicorn/kubicorn"
   packages = [
     "apis/cluster",
@@ -675,7 +675,7 @@
     "state",
     "state/fs"
   ]
-  revision = "665eea5d7e93f1c699df6ea6210e32748481e378"
+  revision = "f8f4bd0f660d5b06bb39553cb2c3afc49ee694f2"
   source = "github.com/banzaicloud/kubicorn"
 
 [[projects]]
@@ -1723,6 +1723,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8b55970da64bfa4309f256f14327d5854ef3bf3975fbe94e8bcecabca3a02b77"
+  inputs-digest = "c4d37fcba2e1516e2728e4c1339d90e0cd64bd19520129221bc2b0385d94e653"
   solver-name = "gps-cdcl"
   solver-version = 1
