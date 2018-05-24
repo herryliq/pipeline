@@ -86,7 +86,7 @@ func GenerateSecretID() string {
 	return uuid.NewV4().String()
 }
 
-const repoSecretType = "repo"
+const RepoSecretType = "repo"
 
 // DefaultRules key matching for types
 var DefaultRules = map[string][]string{
@@ -115,7 +115,7 @@ var DefaultRules = map[string][]string{
 	btypes.Kubernetes: {
 		K8SConfig,
 	},
-	repoSecretType: {
+	RepoSecretType: {
 		RepoName,
 		RepoSecret,
 	},
@@ -188,7 +188,7 @@ func (ss *secretStore) Store(organizationID, secretID string, value CreateSecret
 	log := logger.WithFields(logrus.Fields{"tag": "StoreSecret"})
 	log.Infof("Storing secret")
 	var path string
-	if value.SecretType != repoSecretType {
+	if value.SecretType != RepoSecretType {
 		path = fmt.Sprintf("secret/orgs/%s/%s", organizationID, secretID)
 	} else {
 		path = fmt.Sprintf("secret/orgs/%s/%s/%s", organizationID, value.Values[RepoName], secretID)

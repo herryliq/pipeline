@@ -13,9 +13,15 @@ import (
 	"github.com/banzaicloud/pipeline/helm"
 	"github.com/banzaicloud/pipeline/model"
 	"github.com/banzaicloud/pipeline/model/defaults"
+	"github.com/banzaicloud/pipeline/secret"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
 // TODO see who will win
@@ -641,17 +647,19 @@ func FetchCluster(c *gin.Context) {
 
 // InstallSecretsToCluster add all secrets from a repo to a cluster's namespace
 func InstallSecretsToCluster(c *gin.Context) {
-	log := logger.WithFields(logrus.Fields{"tag": constants.TagFetchClusterConfig})
+	log := logger.WithFields(logrus.Fields{"tag": constants.TagInstallSecretsToCluster})
 	commonCluster, ok := GetCommonClusterFromRequest(c)
-	if ok != true {
+	if !ok {
 		return
 	}
 
+	organizationID := auth.GetCurrentOrganization(c.Request).IDString()
+
 	// bind request body to UpdateClusterRequest struct
-	var updateRequest *components.InstallSecretsToClusterRequest
-	if err := c.BindJSON(&updateRequest); err != nil {
+	var request *components.InstallSecretsToClusterRequest
+	if err := c.BindJSON(&request); err != nil {
 		log.Errorf("Error parsing request: %s", err.Error())
-		c.JSON(http.StatusBadRequest, components.ErrorResponse{
+		c.AbortWithStatusJSON(http.StatusBadRequest, components.ErrorResponse{
 			Code:    http.StatusBadRequest,
 			Message: "Error parsing request",
 			Error:   err.Error(),
@@ -662,34 +670,68 @@ func InstallSecretsToCluster(c *gin.Context) {
 	config, err := commonCluster.GetK8sConfig()
 	if err != nil {
 		log.Errorf("Error during getting config: %s", err.Error())
-		c.JSON(http.StatusBadRequest, components.ErrorResponse{
-			Code:    http.StatusBadRequest,
+		c.AbortWithStatusJSON(http.StatusInternalServerError, components.ErrorResponse{
+			Code:    http.StatusInternalServerError,
 			Message: "Error during getting config",
 			Error:   err.Error(),
 		})
 		return
 	}
 
-	// Force persist keys
-	persistParam := c.DefaultQuery("persist", "false")
-	persist, err := strconv.ParseBool(persistParam)
+	remoteConfig, err := clientcmd.BuildConfigFromKubeconfigGetter("", func() (*clientcmdapi.Config, error) {
+		return clientcmd.Load(config)
+	})
 	if err != nil {
-		persist = false
-	}
-	if persist {
-		cluster.PersistKubernetesKeys(commonCluster)
+		log.Errorf("Error during getting config: %s", err.Error())
+		c.AbortWithStatusJSON(http.StatusInternalServerError, components.ErrorResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Error during getting config",
+			Error:   err.Error(),
+		})
+		return
 	}
 
-	contentType := c.NegotiateFormat(gin.MIMEPlain, gin.MIMEJSON)
-	log.Debug("Content-Type: ", contentType)
-	switch contentType {
-	case gin.MIMEJSON:
-		c.JSON(http.StatusOK, components.GetClusterConfigResponse{
-			Status: http.StatusOK,
-			Data:   string(config),
+	clusterClient, err := kubernetes.NewForConfig(remoteConfig)
+	if err != nil {
+		log.Errorf("Error during building k8s client: %s", err.Error())
+		c.AbortWithStatusJSON(http.StatusInternalServerError, components.ErrorResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Error during getting config",
+			Error:   err.Error(),
 		})
-	default:
-		c.String(http.StatusOK, string(config))
+		return
 	}
-	return
+
+	items, err := secret.Store.List(organizationID, secret.RepoSecretType, request.Repo)
+	if err != nil {
+		log.Errorf("Error during listing secrets: %s", err.Error())
+		c.AbortWithStatusJSON(http.StatusInternalServerError, components.ErrorResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Error during listing secrets",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	k8sSecret := v1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      request.Repo,
+			Namespace: request.Namespace,
+		},
+	}
+	for _, item := range items {
+		k8sSecret.StringData[item.Name] = item.Values[secret.RepoSecret]
+	}
+	_, err = clusterClient.CoreV1().Secrets(request.Namespace).Create(&k8sSecret)
+	if err != nil {
+		log.Errorf("Error during creating secrets: %s", err.Error())
+		c.AbortWithStatusJSON(http.StatusInternalServerError, components.ErrorResponse{
+			Code:    http.StatusInternalServerError,
+			Message: "Error during creating secrets",
+			Error:   err.Error(),
+		})
+		return
+	}
+
+	c.Status(http.StatusOK)
 }

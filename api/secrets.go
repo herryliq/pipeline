@@ -22,14 +22,12 @@ var ErrNotSupportedSecretType = errors.New("Not supported secret type")
 // AddSecrets saves the given secret to vault
 func AddSecrets(c *gin.Context) {
 
-	log = logger.WithFields(logrus.Fields{"tag": "Create Secrets"})
+	log := logger.WithFields(logrus.Fields{"tag": "Create Secrets"})
 	log.Info("Start adding secrets")
 
 	log.Info("Get organization id from params")
 	organizationID := auth.GetCurrentOrganization(c.Request).IDString()
 	log.Infof("Organization id: %s", organizationID)
-
-	log.Info("Binding request")
 
 	var createSecretRequest secret.CreateSecretRequest
 	if err := c.ShouldBind(&createSecretRequest); err != nil {
@@ -85,7 +83,7 @@ func AddSecrets(c *gin.Context) {
 // if repo is set list the secrets for a given repo
 func ListSecrets(c *gin.Context) {
 
-	log = logger.WithFields(logrus.Fields{"tag": "List Secrets"})
+	log := logger.WithFields(logrus.Fields{"tag": "List Secrets"})
 	log.Info("Start listing secrets")
 
 	log.Info("Get organization id and secret type from params")
@@ -122,7 +120,7 @@ func ListSecrets(c *gin.Context) {
 
 // DeleteSecrets delete a secret with the given secret id
 func DeleteSecrets(c *gin.Context) {
-	log = logger.WithFields(logrus.Fields{"tag": "Delete Secrets"})
+	log := logger.WithFields(logrus.Fields{"tag": "Delete Secrets"})
 	log.Info("Start deleting secrets")
 
 	log.Info("Get organization id from params")
@@ -156,7 +154,7 @@ func DeleteSecrets(c *gin.Context) {
 
 // ListAllowedSecretTypes returns the allowed secret types and the required keys
 func ListAllowedSecretTypes(c *gin.Context) {
-	log = logger.WithFields(logrus.Fields{"tag": "List allowed types/required keys"})
+	log := logger.WithFields(logrus.Fields{"tag": "List allowed types/required keys"})
 
 	log.Info("Start listing allowed types and required keys")
 	organizationID := auth.GetCurrentOrganization(c.Request).IDString()
@@ -175,7 +173,6 @@ func ListAllowedSecretTypes(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusOK, response)
 	}
-
 }
 
 // GetAllowedTypes filters the allowed secret types if necessary
