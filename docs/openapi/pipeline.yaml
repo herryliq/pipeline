@@ -4006,8 +4006,15 @@ components:
     CreateAzureObjectStoreBucketProperties:
       type: object
       required:
-        - storage_account
+        - storageAccount
+        - resourceGroup
+        - location
       properties:
-        storage_account:
+        storageAccount:
           type: string
           example: "mystorageaccount"
+        location:
+          type: string
+          example: "westeurope"
+        resourceGroup:
+          type: string
